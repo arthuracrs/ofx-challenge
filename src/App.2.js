@@ -70,9 +70,9 @@ function App() {
                         series: []
                     }
                 })
-
+            
                 let tempCategories = dates.map(x => x.date)
-
+                
                 //-setting chart options
                 setToChartOptions({
                     chart: {
@@ -88,34 +88,18 @@ function App() {
 
                 let types = tempTransactions.map(x => x.TRNTYPE)
                 types = justUnique(types)
-
                 for (let i = 0; i < types.length; i++) {
-                    for (let j = 0; j < dates.length; j++) {
-                        dates[j].series.push({
-                            name: types[i],
-                            data: []
-                        })
-                    }
+                    series.push({
+                        name: types[i],
+                        data: []
+                    })
                 }
-                console.log(dates)
-                // itera cada transação
                 for (let singleTransaction of tempTransactions) {
-                    // identifica a data da transação
-                    for (let datesX = 0; datesX < dates.length; datesX++) {
-                        if (dates[datesX].date == singleTransaction.DTPOSTED) {
-                            // identifica tipo
-                            // encontra tipo correspondente
-                            for (let seriesX = 0; seriesX < dates[datesX].series.length; seriesX++) {
-
-                                if (dates[datesX].series[seriesX].name == singleTransaction.TRNTYPE) {
-                                    dates[datesX].series[seriesX].data.push(singleTransaction.TRNAMT)
-                                }
-                            }
+                    for (let x = 0; x < series.length; x++) {
+                        if (series[x].name == singleTransaction.TRNTYPE) {
+                            series[x].data.push(singleTransaction.TRNAMT)
+                            break
                         }
-                        // if (series[x].name == singleTransaction.TRNTYPE) {
-                        //     series[x].data.push(singleTransaction.TRNAMT)
-                        //     break
-                        // }
                     }
                 }
                 //-setting chart series

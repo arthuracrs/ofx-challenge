@@ -54,14 +54,17 @@ function App() {
 
             Banking.parse(text, function(res) {
                 // loading transactions
-                let tempTransactions = res.body.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKTRANLIST.STMTTRN.map(x => {
-                    //formating dates
+                let tempTransactions = res.body.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKTRANLIST.STMTTRN
+                //formating dates
+                tempTransactions = tempTransactions.map(x => {
+
                     x.DTPOSTED = formatDate(x.DTPOSTED)
                     return x
                 })
+
                 setTransactions(tempTransactions)
 
-                // loading dates: x-axis, categories
+                // loading dates: data sctructure to populate chart
                 let dates = tempTransactions.map(x => x.DTPOSTED)
                 dates = justUnique(dates)
                 dates = dates.map(x => {
@@ -84,8 +87,6 @@ function App() {
                 })
 
                 //loading types: series
-                let series = []
-
                 let types = tempTransactions.map(x => x.TRNTYPE)
                 types = justUnique(types)
 
@@ -104,21 +105,42 @@ function App() {
                     for (let datesX = 0; datesX < dates.length; datesX++) {
                         if (dates[datesX].date == singleTransaction.DTPOSTED) {
                             // identifica tipo
-                            // encontra tipo correspondente
                             for (let seriesX = 0; seriesX < dates[datesX].series.length; seriesX++) {
-
                                 if (dates[datesX].series[seriesX].name == singleTransaction.TRNTYPE) {
-                                    dates[datesX].series[seriesX].data.push(singleTransaction.TRNAMT)
+                                    dates[datesX].series[seriesX].data.push(Number(singleTransaction.TRNAMT))
                                 }
                             }
                         }
-                        // if (series[x].name == singleTransaction.TRNTYPE) {
-                        //     series[x].data.push(singleTransaction.TRNAMT)
-                        //     break
-                        // }
                     }
                 }
                 //-setting chart series
+                let series = []
+
+                for (let type of types) {
+                    series.push({
+                        name: type,
+                        data: []
+                    })
+                }
+
+
+                for (let serieType of series) {
+                    for (let day of dates) {
+                        for (let x of day.series) {
+                            if (serieType.name == x.name) {
+                                let temp = 0
+                                for (let i = 0; i < x.data.length; i++) {
+                                    if (x.data[i] != undefined && x.data[i] != null) {
+                                        temp += x.data[i]
+                                    }
+                                }
+                                serieType.data.push(temp.toFixed(2) < 0 ? temp.toFixed(2) *-1:temp.toFixed(2))
+                            }
+
+                        }
+                    }
+                }
+                console.log(series)
                 setTochartSeries(series)
 
             });
